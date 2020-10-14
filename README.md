@@ -1,6 +1,7 @@
 This repository containes the code to analyze the Four in a Row Development data 
 
-Data quality checks: run "fourinarow data quality checks.ipynb" located in the Four_in_a_row_Analyses folder
+Data quality checks: 
+Run "fourinarow data quality checks.ipynb" located in the Four_in_a_row_Analyses folder
 - There should be 22 games per subject (2 of wich are practise)
 - Number of wins per subject should be about 2/3
 - Number of subject moves (should be at minimum about 150)
@@ -15,7 +16,7 @@ The splits file contains one folder per participant and the corresponding count 
 
 2. Login to the HPC prince. Copy both raw and splits to the cluster and run a slurm script "sbatch auto_fit.sh" 
 
-Checks afer fitting:
+Checks after fitting:
 1. Check the mean test log likelihood. These are in lltest$n.csv. Each of these will have as many entries as there are boards in the dataset for that split.
 To get a LL for the participant, you want to add all these numbers across all of lltest1.csv to lltest5.csv
 Note: in practice, Bas finds average LLs to be more informative than summed LLs, since different participants have different numbers of data points. 
