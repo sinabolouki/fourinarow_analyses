@@ -1,7 +1,8 @@
 This repository containes the code to analyze the Four in a Row Development data 
 
+Run "Parse fourinarow data.ipynb" in the folder "Experiment code" and add your participant numbers in cell 55 along with the correct directory and datafile name.
+
 Data quality checks: 
-Run "fourinarow data quality checks.ipynb" located in the Four_in_a_row_Analyses folder
 - There should be 22 games per subject (2 of wich are practise)
 - Number of wins per subject should be about 2/3
 - Number of subject moves (should be at minimum about 150)
@@ -10,11 +11,10 @@ Run "fourinarow data quality checks.ipynb" located in the Four_in_a_row_Analyses
 - RT distribution
 
 To fit the data:
-1. go to "Parse fourinarow data.ipynb" in the folder "Experiment code" and add your participant numbers in cell 55 along with the correct directory and datafile name.
-This will create two subfolders: "raw" and "splits". 
+The python notebook will create two subfolders: "raw" and "splits". 
 The splits file contains one folder per participant and the corresponding count (your first participant is folder "1", second is folder "2" etc). This is the input for the fitting pipeline.
 
-2. Login to the HPC prince. Copy both raw and splits to the cluster and run a slurm script "sbatch auto_fit.sh" 
+Login to the HPC prince. Copy both raw and splits to the cluster and run a slurm script "sbatch auto_fit.sh" 
 
 Checks after fitting:
 1. Check the mean test log likelihood. These are in lltest$n.csv. Each of these will have as many entries as there are boards in the dataset for that split.
