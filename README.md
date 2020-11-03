@@ -23,3 +23,5 @@ Note: in practice, Bas finds average LLs to be more informative than summed LLs,
 In python you can do this by running: nll = np.sum(np.hstack([np.loadtxt(direc + 'lltest' + str(i) + '.csv' for i in range(1,6)]))
 
 2. Create a bargraph of the parameter estimates, see figure in cell 156 in "Parameter tradeoffs and reliability.ipynb"
+
+Order of parameter estimates: pruning threshold, stopping probability, feature drop rate, lapse rate, active scaling constant, then weights of center, 2-in-a-row connected, 2 unconnected, 3 and 4-in-a-row
