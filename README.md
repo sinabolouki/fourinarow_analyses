@@ -3,12 +3,12 @@ This repository containes the code to analyze the Four in a Row Development data
 Run "Parse fourinarow data.ipynb" in the folder "Experiment code" and add your participant numbers in cell 55 along with the correct directory and datafile name.
 
 Data quality checks: 
-- There should be 22 games per subject (2 of wich are practise)
-- Number of wins per subject should be about 2/3
+- There should be 37 games per subject (2 of wich are practise)
+- Number of wins per subject should be about 2/3 but is probably more for adults
 - Number of subject moves (should be at minimum about 150)
 - Check for ceiling or floor effects in staircasing
 - plot estimate win rate as a function of opponent level and fit a psychometric curve (a sigmoid) aggregated over subjects. Then ideally the inflection point of that sigmoid should be close to the 1/3 of the range and the ends should be close to 0/100
-- RT distribution
+- plot RT distribution
 
 To fit the data:
 The python notebook will create two subfolders: "raw" and "splits". 
