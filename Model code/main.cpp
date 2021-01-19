@@ -6,6 +6,8 @@
 #include "board_list.h"
 #include "Peak code/heuristic.h"
 #include "Experiment agent code/heuristic_old.h"
+#include "heuristic_fixed_branch.h"
+#include "heuristic_fixed_iters.h"
 
 #include <fstream>
 #include <ctime>
@@ -87,6 +89,47 @@ void calculate_peak_ratings(const char* output_filename, int ranks[][2], const i
   output.close();
 }
 
+int play_game(heuristic& h_black, heuristic& h_white, bool verbose = false){
+  board b;
+  zet m;
+  bool player = BLACK;
+  while(!b.game_has_ended()){
+      if(player==BLACK)
+        m = h_black.makemove_bfs(b,BLACK);
+      else
+        m = h_white.makemove_bfs(b,WHITE);
+      player=!player;
+      b.add(m);
+      if(verbose)
+        b.write();
+  }
+  if(b.black_has_won())
+    return 1;
+  else if(b.is_full())
+    return 0;
+  return -1;
+}
+
+void test_agents(const char* param_filename, const char* output_filename, int N,int k){
+  ofstream output(output_filename,ios::out);
+  heuristic h_black, h_white;
+  mt19937_64 global_generator;
+  global_generator.seed(unsigned(time(0)));
+  h_black.seed_generator(global_generator);
+  h_white.seed_generator(global_generator);
+  int i,j;
+  for(int n=0;n<N*N;n+=k){
+    i=n/N;
+    j=n%N;
+    h_black.get_params_from_file(param_filename,i);
+    h_white.get_params_from_file(param_filename,j);
+    output<<i<<"\t"<<j<<"\t"<<play_game(h_black,h_white,false)<<endl;
+    cout<<i<<"\t"<<j<<endl;
+  }
+  output.close();
+}
+
+
 int main(int argc, char* argv[]){
   data_struct dat;
   heuristic h;
@@ -96,28 +139,27 @@ int main(int argc, char* argv[]){
   //int ranks[10][2]={{5,10},{20,40},{50,70},{80,100},{110,130},{140,160},{150,165},{170,199},{175,185},{180,199}};
   //calculate_peak_ratings(output_filename,ranks,10,10);
 
-  //test_nhp_agents(1650,23);
+  test_nhp_agents(200,1);
   //const char* direc = "C:/Users/svo/Documents/fmri/splits/";
-  //const char* param_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Params/params_tai_final.txt";
+  //const char* param_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Params/params_learn_final_fixed_branch.txt";
   //const char* param_filename = "C:/Users/svo/Documents/fmri/params_fmri_final.txt";
-  const char* output_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Model prediction/prediction_hvh.txt";
+  //const char* output_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Model prediction/prediction_hvh.txt";
   //const char* input_filename = "C:/Users/svo/Documents/peak/splits/1/1.csv";
   //dat.load_board_file(input_filename);
-
-  const char* param_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Params/params_hvh_final.txt";
-  const char* board_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/data_hvh.txt";
-  ofstream output(output_filename);
-  dat.load_board_file(board_filename);
+  //const char* output_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/Ratings/tournament_results_short.txt";
+  //const char* param_filename = "C:/Users/svo/Documents/Sourcetree repos/fourinarow/params_sorted_by_elo.txt";
+  //const char* board_filename = "C:/Users/svo/Google Drive/Bas Games/Analysis/data_hvh.txt";
+  //test_agents(param_filename,output_filename,200,1);
+  //ofstream output(output_filename);
+  /*dat.load_board_file(board_filename);
   for(unsigned int i=0;i<dat.Nboards;i++){
+    h.get_params_from_file(param_filename,dat.alltrials[i].player_id,dat.alltrials[i].group);
     for(int n=0;n<100;n++){
-        h.get_params_from_file(param_filename,dat.alltrials[i].player_id,dat.alltrials[i].group);
-        output<<uint64totile(h.makemove_bfs(dat.alltrials[i].b,dat.alltrials[i].player).zet_id)<<"\t";
+      cout<<uint64totile(h.makemove_bfs(dat.alltrials[i].b,dat.alltrials[i].player).zet_id)<<"\t";
     }
-    output<<endl;
+    //output<<endl;
     cout<<i<<endl;
-  }
-  output.close();
-
+  }*/
   //dat.load_board_file("C:/Users/svo/Documents/fmri/invalid_boards.csv",-1);
   //compute_fmri_values_entropy(h,dat,param_filename,output_filename,100);
 
