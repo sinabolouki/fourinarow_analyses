@@ -3,8 +3,14 @@
 % auto_split.m/generate_splits.m.
 function [params,loglik_train,loglik_test] = cross_val(user, num, direc)
 
+% Assuming all folders in direc belong to users we'll use dir and user nr
+% to get user name
+listing = dir(direc);
+listing = listing([listing.isdir]);
+listing = listing(~ismember({listing.name},{'.','..'}));
+
 % Find all files for the specified user
-user_path = sprintf('%s/%i/', direc, user)
+user_path = sprintf('%s/%s/', direc, listing(user).name)
 
 % Load all the groups
 for i=1:5
