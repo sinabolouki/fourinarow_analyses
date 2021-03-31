@@ -1,7 +1,37 @@
+import json
 import numpy as np
-import subprocess
 import os
 import pandas as pd
+import subprocess
+
+def load_data(filename):
+    df = pd.read_csv(filename, header=None, names=['participant_id','i','ts','info'])
+    result = {}
+    for participant_id in df['participant_id'].unique():
+        # Skip debug data by filtering in name
+        if any(part in participant_id.lower() for part in ["debug", "test", "noas", "null"]):
+            print("drop " + participant_id)
+            continue
+        events = [json.loads(e) for e in df[df['participant_id'] == participant_id]['info']]
+        result[participant_id] = sorted(events,key=lambda e:e['event_time'])
+    print(f"Loaded {len(result)} participants")
+    return result
+
+def get_events_with_type(f, event_type):
+    return [e for e in f if e['event_type'].replace('_',' ') == event_type.replace('_', ' ')]
+
+# Make data more accessible
+def get_parsed_data(data):
+    nGames = len(get_events_with_type(data, 'end game'))
+    # A full task includes 37 games, but completing almost all of them is good enough
+    assert nGames >= 36, f"user only finished {nGames} games"
+    assert nGames <= 37, f"user completed too many games? {nGames}"
+    your_turn_events = get_events_with_type(data, 'your turn')
+    user_move_events = get_events_with_type(data, 'user move')
+    assert len(your_turn_events) == len(user_move_events), "user quit in the middle of a turn"
+    return [(e['event_info']['bp'], e['event_info']['wp'], e['event_info']['tile'],
+             e['event_info']['user_color'], (e['event_time'] - e_your_turn['event_time']) / 1000)
+            for e_your_turn, e in zip(your_turn_events, user_move_events) if "bp" in e["event_info"]]
 
 def expand_params(params):
     """convert list of 10 parameters to expanded version of 58, as used for the C++ input"""
