@@ -4,17 +4,19 @@ import os
 import pandas as pd
 import subprocess
 
-def load_data(filename):
+def load_data(filename, verbose = True):
     df = pd.read_csv(filename, header=None, names=['participant_id','i','ts','info'])
     result = {}
     for participant_id in df['participant_id'].unique():
         # Skip debug data by filtering in name
         if any(part in participant_id.lower() for part in ["debug", "test", "noas", "null"]):
-            print("drop " + participant_id)
+            if verbose:
+                print("drop " + participant_id)
             continue
         events = [json.loads(e) for e in df[df['participant_id'] == participant_id]['info']]
         result[participant_id] = sorted(events,key=lambda e:e['event_time'])
-    print(f"Loaded {len(result)} participants")
+    if verbose:
+        print(f"Loaded {len(result)} participants")
     return result
 
 def get_events_with_type(f, event_type):
