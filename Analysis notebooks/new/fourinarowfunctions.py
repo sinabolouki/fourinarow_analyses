@@ -31,9 +31,23 @@ def get_parsed_data(data):
     your_turn_events = get_events_with_type(data, 'your turn')
     user_move_events = get_events_with_type(data, 'user move')
     assert len(your_turn_events) == len(user_move_events), "user quit in the middle of a turn"
-    return [(e['event_info']['bp'], e['event_info']['wp'], e['event_info']['tile'],
-             e['event_info']['user_color'], (e['event_time'] - e_your_turn['event_time']) / 1000)
-            for e_your_turn, e in zip(your_turn_events, user_move_events) if "bp" in e["event_info"]]
+    result = []
+    game = []
+    prevcolor = None
+    for e_your_turn, e in zip(your_turn_events, user_move_events):
+        if not "bp" in e["event_info"]:
+            continue
+        event = {"bp": e['event_info']['bp'], "wp": e['event_info']['wp'], "tile": e['event_info']['tile'],
+            "user_color": e['event_info']['user_color'], "reactiontime": (e['event_time'] - e_your_turn['event_time']) / 1000}
+        if prevcolor and event["user_color"] != prevcolor:
+            result.append(game)
+            game = [event]
+        else:
+            game.append(event)
+        prevcolor = event["user_color"]
+    if game:
+        result.append(game)
+    return result
 
 def expand_params(params):
     """convert list of 10 parameters to expanded version of 58, as used for the C++ input"""
