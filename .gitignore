@@ -1,7 +1,6 @@
 **/.ipynb_checkpoints/
 **/raw/
 **/splits/
-trialdata.csv
 *#
 Analysis notebooks/data/depth/
 *.pyc
