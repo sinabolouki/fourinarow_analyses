@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 # hieronder array = 0 - nr subjects * 5 - 1
-#SBATCH --array=0-759
+#SBATCH --array=0-789
 #SBATCH --cpus-per-task=20
 #SBATCH --time=24:00:00
 #SBATCH --mem=2GB
@@ -13,7 +13,7 @@
 player=$((${SLURM_ARRAY_TASK_ID} / 5 + 1))
 group=$((${SLURM_ARRAY_TASK_ID} % 5 + 1))
 
-direc=$HOME/fourinarow
+direc=$HOME/fourinarow/splits
 codedirec=$HOME/modelcode/matlab\ wrapper
 
 module purge
