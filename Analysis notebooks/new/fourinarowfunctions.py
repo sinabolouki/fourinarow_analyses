@@ -14,7 +14,7 @@ def load_data(filename, verbose = True):
                 print("drop " + participant_id)
             continue
         events = [json.loads(e) for e in df[df['participant_id'] == participant_id]['info']]
-        result[participant_id] = sorted(events,key=lambda e:e['event_time'])
+        result[participant_id] = events # Don't sort by event time! Time adjustments can mess up the order.
     if verbose:
         print(f"Loaded {len(result)} participants")
     return result
@@ -23,30 +23,41 @@ def get_events_with_type(f, event_type):
     return [e for e in f if e['event_type'].replace('_',' ') == event_type.replace('_', ' ')]
 
 # Make data more accessible
-def get_parsed_data(data):
-    nGames = len(get_events_with_type(data, 'end game'))
-    # A full task includes 37 games, but completing almost all of them is good enough
-    assert nGames >= 36, f"user only finished {nGames} games"
-    assert nGames <= 37, f"user completed too many games? {nGames}"
-    your_turn_events = get_events_with_type(data, 'your turn')
-    user_move_events = get_events_with_type(data, 'user move')
-    assert len(your_turn_events) == len(user_move_events), "user quit in the middle of a turn"
+def get_parsed_data(data, user = "?"):
     result = []
     game = []
-    prevcolor = None
-    for e_your_turn, e in zip(your_turn_events, user_move_events):
-        if not "bp" in e["event_info"]:
-            continue
-        event = {"bp": e['event_info']['bp'], "wp": e['event_info']['wp'], "tile": e['event_info']['tile'],
-            "user_color": e['event_info']['user_color'], "reactiontime": (e['event_time'] - e_your_turn['event_time']) / 1000}
-        if prevcolor and event["user_color"] != prevcolor:
-            result.append(game)
-            game = [event]
-        else:
+    game_nr = -1
+    include_game = True
+    for e in data:
+        if e["event_type"] == "start game":
+            if game:
+                if include_game:
+                    result.append(game)
+                game = []
+                include_game = True
+            game_nr = int(e["event_info"]["game_num"])
+            if not e["event_info"]["is_practice"]:
+                game_nr += 2
+            if game_nr != len(result):
+                if game_nr < 2:
+                    include_game = False
+                    continue # Users can potentially redo the instruction games
+                if len(result) == 37:
+                    print(f"user {user} started games after completing the task. Using only the first 37 games")
+                    break
+                else:
+                    assert False, f"user {user} started game {game_nr} before (len {len(result)}) at time {e['event_time']}"
+        elif e["event_type"] == "your turn":
+            e_your_turn = e
+        elif e["event_type"] == "user move":
+            assert e_your_turn, f"{user} made a move before turn announcement in game {game_nr} at time {e['event_time']}"
+            event = {"bp": e['event_info']['bp'], "wp": e['event_info']['wp'], "tile": e['event_info']['tile'],
+                "user_color": e['event_info']['user_color'], "reactiontime": (e['event_time'] - e_your_turn['event_time']) / 1000}
+            e_your_turn = None
             game.append(event)
-        prevcolor = event["user_color"]
     if game:
         result.append(game)
+    assert len(result) >= 36, f"user only finished {len(result)} games"
     return result
 
 def expand_params(params):

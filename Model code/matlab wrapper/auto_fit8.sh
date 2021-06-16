@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 # hieronder array = 0 - nr subjects * 5 - 1
-#SBATCH --array=0-789
+#SBATCH --array=0-794
 #SBATCH --cpus-per-task=20
 #SBATCH --time=24:00:00
 #SBATCH --mem=2GB
