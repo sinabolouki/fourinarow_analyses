@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=20
 #SBATCH --time=24:00:00
 #SBATCH --mem=2GB
-#SBATCH --job-name=fourinarow
+#SBATCH --job-name=four_5
 #SBATCH --mail-type=ALL
 ##SBATCH --mail-user=svo213@nyu.edu
 #SBATCH --output=4inarow_%j.out
@@ -14,9 +14,9 @@ player=$((${SLURM_ARRAY_TASK_ID} / 5 + 1))
 group=$((${SLURM_ARRAY_TASK_ID} % 5 + 1))
 
 indir=$HOME/fourinarow/splits
-outdir=$HOME/fourinarow/fit
-lesion_index=-1
-lesion_value=0
+outdir=$HOME/fourinarow/fit_no_scale
+lesion_index=5
+lesion_value=1
 codedirec=$HOME/modelcode/matlab\ wrapper
 
 module purge
@@ -24,6 +24,6 @@ module load matlab/2020b
 
 echo $player $group
 
-echo "addpath(genpath('${codedirec}')); cross_val($player,$group,'${indir}', '${outdir}'); exit;" | matlab -nodisplay
+echo "addpath(genpath('${codedirec}')); cross_val($player,$group,'${indir}', '${outdir}', ${lesion_index}, ${lesion_value}); exit;" | matlab -nodisplay
 
 echo "Done"
