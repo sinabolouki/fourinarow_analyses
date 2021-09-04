@@ -15,7 +15,7 @@ Data quality checks:
 To fit the data:
 * Get the data from psiturk. This will give you ```trialdata.csv``` which should go in the data folder
 * From the ```Process Data``` notebook run the first part to get a ```splits``` and ```raw``` folder in the data folder. The splits file contains one folder per participant. This is the input for the fitting pipeline.
-* Login to the HPC. Copy both raw and splits to the cluster. Copy the modelcode folder too. On the cluster edit and run a slurm script ```sbatch auto_fit.sh```
+* Login to the HPC. Copy the splits folder to the cluster. Copy the modelcode folder too. On the cluster edit ```modelcode/matlab wrapper/auto_fit.sh``` and run ```sbatch auto_fit.sh```
 * Copy the resulting ```fit_main``` folder back to the data folder in this repository
 
 Checks after fitting:
@@ -31,6 +31,6 @@ Order of free parameter estimates: 1. pruning threshold, 2. stopping probability
 Run the rest of data analysis
 * Now that you have updated the ```fit_main``` folder you can run the remainder of the ```Process Data``` notebook to get ```paramsMatrix.csv``` and the two ```paramsLogLikelihoods*.csv``` files.
 * Run the first part of the ```Calculate metrics and Elo``` notebook to get ```params.txt```.
-* Copy params.txt back to the cluser, edit and run (with sbatch) ```compute_planning_depth.sh```. This will give you the ```depth``` folder.
-* Copy the depth folder back to the data folder in this repository (it has many small files, so you may want to zip the folder).
+* Copy params.txt back to the cluser, edit and run (with sbatch) ```compute_planning_depth.sh```. The script won't create any directories, only files. So make sure you create the ```depth``` folder first and the script will create the files inside it.
+* Copy the depth folder back to the data folder in this repository (it has many small files, so you may want to zip the folder by running ```zip -r depth.zip depth``` in depth's parent dir. It should say ```adding: depth/depth_fourinarow-dev_*_*.txt (stored 0%)``` for every file).
 * Run the rest of the ```Calculate metrics and Elo``` notebook to get ```params_with_metrics.csv```.
