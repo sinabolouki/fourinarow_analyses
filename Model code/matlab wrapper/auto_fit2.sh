@@ -15,8 +15,8 @@ group=$((${SLURM_ARRAY_TASK_ID} % 5 + 1))
 
 indir=$HOME/fourinarow/splits
 outdir=$HOME/fourinarow/fit_no_tree
-lesion_index=2
-lesion_value=1
+lesion_index="[2,1]"
+lesion_value="[1,10000]"
 codedirec=$HOME/modelcode/matlab\ wrapper
 
 module purge

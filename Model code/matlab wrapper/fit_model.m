@@ -1,31 +1,31 @@
 function [params,loglik] = fit_model(data, lesion_index, lesion_value)
 
-% lesion_index: which parameter to lesion (set to 0 or lower to disable)
-% lesion_value: fix the lesioned parameter to this value
+% lesion_index: which parameter(s) to lesion (set to [] to disable)
+% lesion_value: fix the lesioned parameter(s) to these values
 
 badsopts = bads('defaults');
 badsopts.UncertaintyHandling = 1;
 badsopts.NoiseFinalSamples = 0;
 badsopts.MaxFunEvals = 2000;
 
-%     [prn, pstop, drp, laps, scal, ctr, 2un, 2co, 3rw, 4rw]
-x0 =  [ 2 , 0.02 , 0.2, 0.05, 1.2 , 0.8,   1, 0.4, 3.5,  10];
-ub =  [10 , 1    , 1  , 1   , 4   ,  10,  10,  10,  10,  10];
-lb =  [0.1, 0.001, 0  , 0.05, 0.25, -10, -10, -10, -10, -10];
-pub = [10 , 1    , 0.5, 0.5 , 2   ,   5,   5,   5,   5,   5];
-plb = [0.1, 0.001, 0  , 0.05, 0.5 ,  -5,  -5,  -5,  -5,  -5];
+%     [   prn , pstop, drp, laps, scal, ctr, 2un, 2co, 3rw, 4rw]
+x0 =  [    2  , 0.02 , 0.2, 0.05, 1.2 , 0.8,   1, 0.4, 3.5,  10];
+ub =  [10000  , 1    , 1  , 1   , 4   ,  10,  10,  10,  10,  10];
+lb =  [    0.1, 0.001, 0  , 0.05, 0.25, -10, -10, -10, -10, -10];
+pub = [   10  , 1    , 0.5, 0.5 , 2   ,   5,   5,   5,   5,   5];
+plb = [    0.1, 0.001, 0  , 0.05, 0.5 ,  -5,  -5,  -5,  -5,  -5];
 c = 50;
 
 Ntrials = size(data,1);
 L = zeros(Ntrials,10);
 
-% Apply a lesion to one of the parameters.
-if lesion_index > 0
-	x0(lesion_index) = lesion_value;
-	lb(lesion_index) = lesion_value;
-	ub(lesion_index) = lesion_value;
-	plb(lesion_index) = lesion_value;
-	pub(lesion_index) = lesion_value;
+% Apply a lesion to one or more of the parameters.
+for idx = 1:numel(lesion_index)
+	x0(lesion_index(idx))  = lesion_value(idx);
+	lb(lesion_index(idx))  = lesion_value(idx);
+	ub(lesion_index(idx))  = lesion_value(idx);
+	plb(lesion_index(idx)) = lesion_value(idx);
+	pub(lesion_index(idx)) = lesion_value(idx);
 end
 
 data
