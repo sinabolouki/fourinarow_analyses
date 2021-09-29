@@ -12,6 +12,7 @@ def get_subject_list(data_folder):
 
 def account(data_folder, subjects):
 	todo = set(subjects)
+	missing = False
 	for subject_id in os.listdir(data_folder):
 		subdir = os.path.join(data_folder, subject_id)
 		if not os.path.isdir(subdir):
@@ -32,9 +33,13 @@ def account(data_folder, subjects):
 		# for filename in file_list:
 		# 	print(f"{data_folder}/{subject_id} is missing file {filename}")
 		if file_list:
+			missing = True
 			print(f"{data_folder}/{subject_id} is missing files")
 	for subject_id in todo:
+		missing = True
 		print(f"{data_folder} is missing subject {subject_id}")
+	if not missing:
+		print(f"{data_folder} is complete ({len(subjects)} subjects)")
 
 subjects = get_subject_list("./splits")
 account("fit_main", subjects)
