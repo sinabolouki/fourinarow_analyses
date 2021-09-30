@@ -4,7 +4,7 @@
 function [params,loglik_train,loglik_test] = cross_val(user, num, indir, outdir, lesion_index, lesion_value)
 
 if nargin < 4; outdir = indir; end;
-if nargin < 6; lesion_index = -1; lesion_value = 0; end;
+if nargin < 6; lesion_index = []; lesion_value = []; end;
 
 % Assuming all folders in indir belong to users we'll use dir and user nr
 % to get user name
