@@ -60,6 +60,27 @@ def get_parsed_data(data, user = "?"):
     assert len(result) >= 36, f"user only finished {len(result)} games"
     return result
 
+def get_quiz_answers(trial_data):
+    """Given data from load_data, create a list with entries about quiz answers. The result is a list but can be used to create a dataframe."""
+    result = []
+    for subject_id in trial_data:
+        for event in trial_data[subject_id]:
+            type = event["event_type"]
+            if type == "show instructions":
+                show_time = event["event_time"]
+            elif type == "quiz answer":
+                info = event["event_info"]
+                result.append({
+                    "subject": subject_id,
+                    "image": info["image"],
+                    "expected": info['expected'],
+                    "given": info['given'],
+                    "correct": info['correct'],
+                    "rt_ms": int(event['event_time']) - int(show_time)
+                })
+    return result
+
+
 def expand_params(params):
     """convert list of 10 parameters to expanded version of 58, as used for the C++ input"""
     return np.hstack([[10000],params[:2],params[3:4],[1,1],params[5:6],
