@@ -1,4 +1,4 @@
-This repository containes the code to analyze the Four in a Row Development data 
+This repository contains the code to analyze the Four in a Row Development data 
 
 **This repository is private. Make sure that we anonymize the data before making a public repo.**
 
