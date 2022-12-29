@@ -1,7 +1,5 @@
 This repository contains the code to analyze the Four in a Row Development data 
 
-**This repository is private. Make sure that we anonymize the data before making a public repo.**
-
 Run "Parse fourinarow data.ipynb" in the folder "Experiment code" and add your participant numbers in cell 55 along with the correct directory and datafile name.
 
 Data quality checks: 
