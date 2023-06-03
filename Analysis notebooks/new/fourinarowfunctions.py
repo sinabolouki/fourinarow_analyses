@@ -23,7 +23,7 @@ def get_events_with_type(f, event_type):
     return [e for e in f if e['event_type'].replace('_',' ') == event_type.replace('_', ' ')]
 
 # Make data more accessible
-def get_parsed_data(data, user = "?"):
+def get_parsed_data(data, user = "?", include_practice = True, expected_games = 37):
     result = []
     game = []
     game_nr = -1
@@ -36,17 +36,18 @@ def get_parsed_data(data, user = "?"):
                 game = []
                 include_game = True
             game_nr = int(e["event_info"]["game_num"])
-            if not e["event_info"]["is_practice"]:
+            is_practice = e["event_info"]["is_practice"]
+            if is_practice:
+                include_game = include_practice
+            elif include_practice:
                 game_nr += 2
             if game_nr != len(result):
-                if game_nr < 2:
+                if is_practice:
                     include_game = False
                     continue # Users can potentially redo the instruction games
-                if len(result) == 37:
-                    print(f"user {user} started games after completing the task. Using only the first 37 games")
+                if len(result) == expected_games:
+                    print(f"user {user} started games after completing the task. Using only the first {expected_games} games")
                     break
-                else:
-                    assert False, f"user {user} started game {game_nr} before (len {len(result)}) at time {e['event_time']}"
         elif e["event_type"] == "your turn":
             e_your_turn = e
         elif e["event_type"] == "user move":
@@ -57,7 +58,7 @@ def get_parsed_data(data, user = "?"):
             game.append(event)
     if game:
         result.append(game)
-    assert len(result) >= 36, f"user only finished {len(result)} games"
+    assert len(result) >= expected_games, f"user only finished {len(result)} games"
     return result
 
 def get_quiz_answers(trial_data):
