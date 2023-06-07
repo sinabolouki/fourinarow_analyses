@@ -5,7 +5,7 @@
 #SBATCH --time=1:00:00
 #SBATCH --mem=1GB
 #SBATCH --job-name=fourinarow
-#SBATCH --mail-type=ALL
+##SBATCH --mail-type=ALL
 ##SBATCH --mail-user=svo213@nyu.edu
 #SBATCH --output=4inarow_%j.out
 
@@ -16,8 +16,10 @@ paramfile=${direc}/params.txt
 player=$((${SLURM_ARRAY_TASK_ID} / 5 + 0))
 group=$((${SLURM_ARRAY_TASK_ID} % 5 + 1))
 
-outputfile=${direc}/depth/depth_${dataset}_${player}_${group}.txt
+outputdir=${direc}/depth
+outputfile=${outputdir}/depth_${dataset}_${player}_${group}.txt
 
+mkdir -p $outputdir
 echo $paramfile $outputfile $player $group
 time ./compute_planning_depth ./data_hvh.txt $paramfile $player $group $outputfile 10;
 

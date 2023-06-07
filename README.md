@@ -29,6 +29,10 @@ Order of free parameter estimates: 1. pruning threshold, 2. stopping probability
 Run the rest of data analysis
 * Now that you have updated the ```fit_main``` folder you can run the remainder of the ```Process Data``` notebook to get ```paramsMatrix.csv``` and the two ```paramsLogLikelihoods*.csv``` files.
 * Run the first part of the ```Calculate metrics and Elo``` notebook to get ```params.txt```.
-* Copy params.txt back to the cluser, edit and run (with sbatch) ```compute_planning_depth.sh```. The script won't create any directories, only files. So make sure you create the ```depth``` folder first and the script will create the files inside it.
+* Compute planning depth:
+  * Copy params.txt back to the cluser.
+  * Make sure ```modelcode/compute_planning_depth``` (without .sh) is executable on the cluster with ```ls -l compute_planning_depth``` and verify it says something like ```-rwxr-xr-x``` on the left. Those x's says it's executable. Run ```chmod +x compute_planning_depth``` if they're not there.
+  * Copy [data_hvh.txt](./Analysis%20notebooks/new/data_hvh.txt) to modelcode on the cluster so that it appears next to compute_planning_depth.sh.
+  * Edit and run (with sbatch) ```compute_planning_depth.sh```.
 * Copy the depth folder back to the data folder in this repository (it has many small files, so you may want to zip the folder by running ```zip -r depth.zip depth``` in depth's parent dir. It should say ```adding: depth/depth_fourinarow-dev_*_*.txt (stored 0%)``` for every file).
 * Run the rest of the ```Calculate metrics and Elo``` notebook to get ```params_with_metrics.csv```.
