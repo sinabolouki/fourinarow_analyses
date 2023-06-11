@@ -5,13 +5,24 @@
 	<meta http-equiv = "X-UA-Compatible" content = "IE=edge">
 	<meta name="viewport" content="width=device-width">
 	
-	<script src="../static/js/lib/jquery-2.2.4.min.js"></script>
-	<script src="../static/js/lib/jquery-ui.min.js"></script>
-	<script src="../static/js/lib/bootstrap-12/bootstrap.min.js"></script>
-	<script src="../static/js/lib/underscore-min.js"></script>
+	<script src="../static/lib/jquery-min.js"></script>
+	<script src="../static/lib/jquery-ui.min.js"></script>
+	<script src="../static/lib/bootstrap.min.js"></script>
+	<script src="../static/lib/underscore-min.js"></script>
+	<script src="../static/lib/backbone-min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <script src="../static/js/psiturk.js" type="text/javascript"> </script>
+	<script src="../static/js/psiturk.js"></script>
+
+	<script type="text/javascript">
+		// These fields provided by the psiTurk Server
+		const uniqueId = "{{ uniqueId }}";  // a unique string identifying the worker/task
+		const condition = {{ condition }}; // the condition number
+		const counterbalance = {{ counterbalance }}; // a number indexing counterbalancing conditions
+		const adServerLoc = "{{ adServerLoc }}"; // the location of your ad (so you can send user back at end of experiment)
+		const mode = "{{ mode }}";
+	</script>
+
 	<script src="../static/js/4inarow_base.js"></script>
 	<script src="../static/js/4inarow_psiturk.js"></script>
 	<script src="../static/scripts/Code/makemove.js"></script>
@@ -22,19 +33,18 @@
 	</head>
 	<body>
 		<div class="overlayed"></div>
-		<div class="popup" id="credentials">
-			<h4 style="font-size:4vh;text-align:center;">Instructions</h4>
-			<p>Please enter the 10-digit code provided by the experimenter</p>
-			<div id="credentials_input">
-				<input type="text" placeholder=""></input>
-				<input type="submit" value="Submit" style="display:none"></input>
-			</div>
-		</div>
-		<div class="popup" id="instructions">
+		<div class="popup" id="instructions" style="display: flex; flex-direction: column;">
 			<h4 style="font-size:4vh;">Instructions</h4>
-			<img src="" style="width:70vw;border:none"></img>
-			<button id="previousbutton" type="button" class="mybutton" style="bottom:8%;left:43%;width:10%">Previous</button>
-			<button id="nextbutton" type="button" class="mybutton" style="bottom:8%;left:57%;width:10%">Next</button>
+			<div style="flex: 1; min-width: 0; min-height: 0;">
+				<img src="" style="width:100%; height:100%; object-fit:contain;"></img>
+			</div>
+			<div style="height: 3em;">
+				<button id="previousbutton" type="button" class="mybutton" style="left:43%;width:10%; transform: unset;" onclick="change_instruction(-1);">Previous</button>
+				<button id="nextbutton" type="button" class="mybutton" style="left:57%;width:10%; transform: unset;" onclick="change_instruction(+1);">Next</button>
+				<button id="blackbutton" type="button" class="mybutton" style="left:32.5%;width:10%; transform: unset;" onclick="answer('Black');">Black</button>
+				<button id="noonebutton" type="button" class="mybutton" style="left:46.5%;width:10%; transform: unset;" onclick="answer('No-one');">No-one</button>
+				<button id="whitebutton" type="button" class="mybutton" style="left:60.5%;width:10%; transform: unset;" onclick="answer('White');">White</button>
+			</div>
 		</div>
 		<div class="popup" id="database_error">
             <div class="alert alert-danger">
@@ -47,7 +57,7 @@
             <div class="alert alert-danger">
                 <h4 style="font-size:4vh;">Error!</h4>
             </div>
-            <p> We couldn't save your data! Please contact <u><font color="blue">cocosci.turk@gmail.com</font></u> to report the error. Then click the button below.</p>
+            <p> We couldn't save your data! Please contact <u><font color="blue">{{contact_address}}</font></u> to report the error. Then click the button below.</p>
             <button type="button" class="mybutton" id = "resubmit" style="bottom:8%;left:50%;width:15%">I reported the error</button>
         </div>
         <div class="popup" id="handle_error">
@@ -56,19 +66,21 @@
             </div>
             <p> The experiment encountered an error! <a>Click here</a> to report the error by email. Please describe at what point in the HIT the error occurred, and include the following:</p>
             <textarea disabled style="resize:none"></textarea>
-            <p>Then click the button below to submit the HIT. If you have trouble submitting the HIT, please contact <u><font color="blue">cocosci.turk@gmail.com</font></u></p>
+            <p>Then click the button below to submit the HIT. If you have trouble submitting the HIT, please contact <u><font color="blue">{{contact_address}}</font></u></p>
             <button type="button" class="mybutton" id = "submit_hit" style="bottom:8%;left:50%;width:15%">submit HIT</button>
         </div>
 
 		
 		<div class='container-fluid text-center'>
+			<div class="clickprompt">Please click where you want to play a piece.</div>
 			<div class="row">
-				<div class="container-fluid col-xs-8 col-xs-offset-2 canvas-container">
+				<div class="col-xs-8 col-xs-offset-2 canvas-container">
 					<div class="canvas"></div>
 				</div>
 			</div>
 			<div class='row'>
 				<div class="headertext col-xs-8 col-xs-offset-2">
+					<div class="gamecount">Game</div>
 					<h1>Your turn</h1>
 				</div>
 			</div>

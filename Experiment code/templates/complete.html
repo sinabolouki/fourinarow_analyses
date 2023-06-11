@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<html>
+	<body>
+		<script type="text/javascript">
+			const searchParams = new URLSearchParams(document.location.search);
+			const uniqueId = searchParams.get("uniqueId");
+			const workerId = uniqueId.split(':')[0];
+			const href = "https://run.pavlovia.org/hartleylabnyu/mars_4inarow/index.html?participant=" + encodeURIComponent(workerId);
+			window.location.replace(href);
+		</script>
+		You should be redirected to the next questionnaire.
+	</body>
+</html>

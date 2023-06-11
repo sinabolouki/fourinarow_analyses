@@ -1,9 +1,5 @@
-var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
-var LOCAL = (mode === "{{ mode }}");
-
-function finish_experiment(){
-	show_instructions(0,instructions_text_finished,instructions_urls_finished,submitHit,"Finish");
-}
+// Psiturk replaces {{ tags }} in the including page. The script there will set uniqueId, adServerLoc and mode.
+var psiturk = new PsiTurk(uniqueId, adServerLoc, "Lab");
 
 function log_data(data){
 	data.event_time = Date.now();
@@ -18,10 +14,6 @@ function saveData() {
 	console.log('saveData');
 	return new Promise(function(resolve, reject) {
 		var timeout;
-		if (LOCAL) {
-			resolve('local');
-			return;
-		}
 		timeout = setTimeout(function() {
 			console.log('TIMEOUT');
 			return reject('timeout');
@@ -43,16 +35,18 @@ function saveData() {
 
 $(window).on('load', function() {
 	psiturk.recordUnstructuredData('start', String(new Date()));
-	psiturk.recordUnstructuredData('params', PARAMS);
 	return saveData()
-	.then(function() {
-		return setTimeout(function(){
-			initialize_task(10,start_experiment)
-		},100);
-	}).catch(handleError);
+	.then(() => setTimeout(() => {
+		initialize_task();
+		// PsiTurk considers a participant hasn't started until they have finished the instruction.
+		// We want psiTurk to treat them as started right away to get the refresh/page close protection.
+		psiturk.finishInstructions();
+		start_experiment();
+	}, 100))
+	.catch(handleError);
 });
 
-function submitHit() {
+function finish_experiment() {
 	var promptResubmit, triesLeft;
 	console.log('submitHit');
 	$("#overlayed").show()
@@ -97,7 +91,7 @@ function handleError(e) {
 	}
 	psiturk.recordUnstructuredData('error', msg);
 	message = "HitID: " + (typeof hitId !== "undefined" && hitId !== null ? hitId[0] : "N/A") + "\nAssignID: " + (typeof hitId !== "undefined" && hitId !== null ? hitId[0] : "N/A") + "\nWorkerId: " + (typeof workerId !== "undefined" && workerId !== null ? workerId[0] : "N/A") + "\n" + msg
-	$("#handle_error p a").attr("href","mailto:youremailhere@gmail.com?subject=ERROR in experiment&body=" + encodeURIComponent(message))
+	$("#handle_error p a").attr("href","mailto:hartleylab@nyu.edu?subject=ERROR in experiment&body=" + encodeURIComponent(message))
 	$("#handle_error textarea").text(message)
 	$("#handle_error").show()
 	return $('#submit_hit').click(submitHit);

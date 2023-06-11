@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+	<body>
+		<script type="text/javascript">
+			// Generate a random string of characters. Can be used to make other id's unique
+			function makeid()
+			{
+				var text = "";
+				var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+				for( var i=0; i < 5; i++ )
+					text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+				return text;
+			}
+
+			// Psiturk does not like single quotes in its identifiers but encodeURIComponent doesn't encode them.
+			// Even if we replace it with %27 some browsers will decode that right back after they redirect. So we'll replace
+			// it with backtick instead. It will be indistinguishable from if an actual backtick had been used but oh well.
+			function uriComp(value)
+			{
+				return encodeURIComponent(value).replace(/'/g, "`");
+			}
+			
+			const urlParams = new URLSearchParams(window.location.search);
+
+			// We're not running on Amazon so we don't use assignment and hit ids.
+			// However, psiTurk expects them and will throw an error if we don't provide them.
+			var assignmentId = (urlParams.get('assignmentId') || "noas");
+			var workerId = (urlParams.get('workerId') || "debug");
+			var hitId = (urlParams.get('hitId') || "nohit");
+			var href = "/exp?assignmentId=" + uriComp(assignmentId)
+				+ "&hitId=" + uriComp(hitId)
+				+ "&workerId=" + uriComp(workerId)
+				+ "&mode=debug";
+
+			window.location.replace(href);
+		</script>
+		Please enable javascript
+	</body>
+</html>

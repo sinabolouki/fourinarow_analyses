@@ -1,7 +1,5 @@
 function finish_experiment(){
-	show_instructions(0,instructions_text_finished,instructions_urls_finished,function(){
-		save(data_log,"fourinarow_data_" + user_credentials + ".json")	
-	},"Finish");
+	save(data_log,"fourinarow_data_" + user_credentials + ".json");
 }
 
 function get_image_path(filename){
@@ -28,5 +26,6 @@ function log_data(data){
 $(document).ready(function(){
 	user_credentials = "test"
 	//enter_credentials(start_game)
-	initialize_task(10,2,start_experiment)
+	initialize_task();
+	start_experiment();
 });
