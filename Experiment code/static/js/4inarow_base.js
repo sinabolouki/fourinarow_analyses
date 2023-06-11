@@ -77,7 +77,7 @@ function show_last_move(i, color) {
 	}
 }
 
-function check_win(color){
+function check_win(pieces){
 	fourinarows = [[ 0,  9, 18, 27],
 				   [ 1, 10, 19, 28],
 				   [ 2, 11, 20, 29],
@@ -127,10 +127,7 @@ function check_win(color){
 	for(var i=0;i<fourinarows.length;i++){
 		var n = 0;
 		for(var j=0;j<N;j++){
-			if(color==0)//BLACK
-				n+=bp[fourinarows[i][j]]
-			else
-				n+=wp[fourinarows[i][j]]
+			n+=pieces[fourinarows[i][j]]
 		}
 		if(n==N)
 			return fourinarows[i]
@@ -138,7 +135,7 @@ function check_win(color){
 	return []
 }
 
-function check_draw(){
+function check_draw(bp, wp){
 	for(var i=0; i<M*N; i++)
 		if(bp[i]==0 && wp[i]==0)
 			return false;
@@ -173,14 +170,14 @@ function user_move(game_info) {
 		show_last_move(tile_ind, user_color);
 		$(".clickprompt").hide();
 		dismissed_click_prompt = true;
-		winning_pieces = check_win(user_color)
+		winning_pieces = check_win(user_color == 0 ? bp : wp)
 		if(winning_pieces.length==N){
 			show_win(user_color,winning_pieces)
 			log_data({"event_type": "user win", "event_info" : {"bp" : bp.join(""), "wp": wp.join(""), "winning_pieces" : winning_pieces}})
 			$('.headertext h1').text('Game over, you win').css('color', '#000000');
 			end_game(game_info,'win')
 		}
-		else if (check_draw()){
+		else if (check_draw(bp, wp)){
 			log_data({"event_type": "draw", "event_info" : {"bp" : bp.join(""), "wp": wp.join("")}})
 			$('.headertext h1').text('Game over, draw').css('color', '#000000');
 			end_game(game_info,'draw')
@@ -202,14 +199,14 @@ function make_opponent_move(game_info) {
 			log_data({"event_type": "opponent move", "event_info" : {"tile" : tile_ind, "user_color" : (user_color == 0 ? 'black' : 'white'), "bp" : bp.join(""), "wp": wp.join(""), "level" : level}})
 			add_piece(tile_ind,opponent_color);
 			show_last_move(tile_ind, opponent_color);
-			winning_pieces = check_win(opponent_color)
+			winning_pieces = check_win(opponent_color == 0 ? bp : wp)
 			if(winning_pieces.length==N){
 				log_data({"event_type": "opponent win", "event_info" : {"bp" : bp.join(""), "wp": wp.join(""), "winning_pieces" : winning_pieces}})
 				show_win(opponent_color,winning_pieces)
 				$('.headertext h1').text('Game over, you lose').css('color', '#000000');
 				end_game(game_info, 'opponent win')
 			}
-			else if (check_draw()){
+			else if (check_draw(bp, wp)){
 				log_data({"event_type": "draw", "event_info" : {"bp" : bp.join(""), "wp": wp.join("")}})
 				$('.headertext h1').text('Game over, draw').css('color', '#000000');
 				end_game(game_info, 'draw')
@@ -234,8 +231,7 @@ function start_game(game_info) {
 	if (game_info.num == 0 && game_info.startLevel > 0) {
 		level = game_info.startLevel;
 	} else {
-		let ratio = (category - 1 + Math.random()) / nCategories;
-		level = Math.floor(ratio * maxLevel);
+		level = pick_level(category);
 	}
 	log_data({"event_type": "start game", "event_info": {
 		"game_num": game_info.num,
@@ -251,7 +247,12 @@ function start_game(game_info) {
 		make_opponent_move(game_info)
 }
 
-function adjust_level(result){
+function pick_level(category) {
+	let ratio = (category - 1 + Math.random()) / nCategories;
+	return Math.floor(ratio * maxLevel);
+}
+
+function adjust_level(result, category, log_data){
 	old_level = level;
 	if (result == 'win') {
 		if (lastresult == 'win') {
@@ -262,7 +263,8 @@ function adjust_level(result){
 		category = Math.max(category - 1, 1);
 	}
 	lastresult = result;
-	log_data({"event_type": "adjust level", "event_info" : {"category" : category, "maxCategory": nCategories}})
+	log_data({"event_type": "adjust level", "event_info" : {"category" : category, "maxCategory": nCategories}});
+	return category;
 }
 
 function end_game(game_info, result) {
@@ -275,7 +277,7 @@ function end_game(game_info, result) {
 		"result": result,
 		"level": level
 	}});
-	adjust_level(result)
+	category = adjust_level(result, category, log_data);
 	if (current_minutes >= game_info.max_minutes) {
 		// If the game is taking too long then treat the current one as if it were the last
 		log_data({"event_type": "game timeout", "event_info": {
@@ -481,3 +483,4 @@ function start_experiment() {
 	perform_instruction()
 }
 
+module.exports = {pick_level, check_win, check_draw, adjust_level};
