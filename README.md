@@ -24,7 +24,7 @@ In python you can do this by running: nll = np.sum(np.hstack([np.loadtxt(direc +
 
 2. Create a bargraph of the parameter estimates, see figure in cell 156 in "Parameter tradeoffs and reliability.ipynb"
 
-Order of free parameter estimates: 1. pruning threshold, 2. stopping probability, 3. feature drop rate, 4. lapse rate, 5. active scaling constant, 6. then weights of center, 7. 2-in-a-row connected, 8. 2 unconnected, 9. 3 in a row, and 10. 4-in-a-row
+Order of free parameter estimates: 1. pruning threshold, 2. stopping probability, 3. feature drop rate, 4. lapse rate, 5. active scaling constant, 6.  center feature weight, 7. 2-in-a-row connected feature weight, 8. 2 unconnected feature weight, 9. 3 in a row feature weight, and 10. 4-in-a-row feature weight.
 
 Run the rest of data analysis
 * Now that you have updated the ```fit_main``` folder you can run the remainder of the ```Process Data``` notebook to get ```paramsMatrix.csv``` and the two ```paramsLogLikelihoods*.csv``` files.
