@@ -1,9 +1,14 @@
+import glob
 import json
 import numpy as np
 import os
 import pandas as pd
 import subprocess
+from functools import reduce
+from numpy.typing import NDArray
+from typing import List
 
+# Use this to load psiturk/mturk trialdata csv files. Parse the output with get_parsed_data().
 def load_data(filename, verbose = True):
     df = pd.read_csv(filename, header=None, names=['participant_id','i','ts','info'])
     result = {}
@@ -19,11 +24,88 @@ def load_data(filename, verbose = True):
         print(f"Loaded {len(result)} participants")
     return result
 
+# Use this to load tab separated game files used in Matlab analyses
+def load_tabular(filename_glob: str, verbose = True) -> List[pd.DataFrame]:
+    games = []
+    for filename in glob.glob(filename_glob):
+        data = pd.read_csv(filename, delimiter='\t', header=None, names=['bp', 'wp', 'player_color', 'move', 'reactiontime', 'split', 'player_name'])
+        start_index = 0
+        pre_length = len(games)
+        for row_index in range(1, len(data)):
+            if data["wp"].values[row_index] == 0:
+                games.append(data.iloc[start_index:row_index, :])
+                start_index = row_index
+        games.append(data.iloc[start_index:,:])
+        if verbose:
+            print(f"Loaded {len(games) - pre_length} games from {filename}")
+    return games
+
+def decode_board(encoded: int) -> NDArray[np.bool_]:
+    # Create a matrix that has True where pieces are and False otherwise.
+    board = np.zeros((9, 4), dtype=bool)
+    index = 0;
+    while encoded > 0:
+        if encoded % 2 > 0:
+            board[index % 9][index // 9] = True
+        encoded = encoded >> 1
+        index = index + 1;
+    return board.transpose()
+
+def is_four_in_a_row(board: NDArray[np.bool_]) -> bool:
+    return (
+        is_horizontal_four_in_a_row(board) or
+        is_horizontal_four_in_a_row(board.transpose()) or
+        is_diagonal_down_four_in_a_row(board) or
+        is_diagonal_down_four_in_a_row(np.rot90(board))
+    )
+
+def is_horizontal_four_in_a_row(board: NDArray[np.bool_]) -> bool:
+    # check rows
+    for row in board:
+        # The lambda counts Trues but resets if it encounters a False before we reach 4
+        if reduce(lambda a,b: int(a) + int(b) if b or a >= 4 else 0, row) >= 4:
+            return True
+    return False
+
+def is_diagonal_down_four_in_a_row(board: NDArray[np.bool_]) -> bool:
+    # Checks four in a row in the \ diagonal, not on the / diagonal
+    def check_diagonal(row, col):
+        for n in range(4):
+            if not board[row + n][col + n]:
+                return False
+        return True
+    for row in range(board.shape[0] - 4 + 1):
+        for col in range(board.shape[1] - 4 + 1):
+            if check_diagonal(row, col):
+                return True
+    return False
+
+def get_outcome(game: pd.DataFrame) -> int:
+    # Determines who won the game in the dataframe. The dataframe should have columns for
+    # bp, wp, player_color, and move. The outcome is 1 if the player won, -1 if the opponent won and
+    # 0 indicates a draw.
+    last_row = game.iloc[-1]
+    player_is_black = last_row.player_color == "Black"
+    # Evaluate the board after the player makes their last move
+    player_pieces = decode_board(last_row.move + (last_row.bp if player_is_black else last_row.wp))
+    if is_four_in_a_row(player_pieces):
+        return 1 # Player won
+    # The player didn't win on their last move. If the board doesn't fill up then the opponent will win.
+    opponent_pieces = decode_board(last_row.wp if player_is_black else last_row.bp)
+    all_pieces = np.logical_or(player_pieces, opponent_pieces)
+    if np.sum(all_pieces) == 9 * 4 - 1:
+        # If there is one empty space left we must make sure it doesn't make 4-in-a-row
+        # when the opponent plays there
+        opponent_pieces = np.logical_or(opponent_pieces, np.logical_not(all_pieces))
+        if not is_four_in_a_row(opponent_pieces):
+            return 0 # Last move creates a draw
+    return -1 # Opponent will win in the next move
+
 def get_events_with_type(f, event_type):
     return [e for e in f if e['event_type'].replace('_',' ') == event_type.replace('_', ' ')]
 
 # Make data more accessible
-def get_parsed_data(data, user = "?", include_practice = True, expected_games = 37):
+def get_parsed_data(data, user, include_practice = True, expected_games = 37):
     result = []
     game = []
     game_nr = -1
@@ -45,9 +127,6 @@ def get_parsed_data(data, user = "?", include_practice = True, expected_games = 
                 if is_practice:
                     include_game = False
                     continue # Users can potentially redo the instruction games
-                if len(result) == expected_games:
-                    print(f"user {user} started games after completing the task. Using only the first {expected_games} games")
-                    break
         elif e["event_type"] == "your turn":
             e_your_turn = e
         elif e["event_type"] == "user move":
@@ -58,7 +137,9 @@ def get_parsed_data(data, user = "?", include_practice = True, expected_games = 
             game.append(event)
     if game:
         result.append(game)
-    assert len(result) >= expected_games, f"user only finished {len(result)} games"
+    assert len(result) >= expected_games - 1, f"user only finished {len(result)} games"
+    if len(result) != expected_games:
+        print(f"user {user} started {len(result)} games.")
     return result
 
 def get_quiz_answers(trial_data):
