@@ -190,12 +190,13 @@ optimal_board_values = np.full_like(player_color,fill_value=np.nan,dtype=float)
 optimal_board_values[player_color==0] = np.nanmax(optimal_move_values[player_color==0,:],axis=1)
 optimal_board_values[player_color==1] = -np.nanmin(optimal_move_values[player_color==1,:],axis=1)
 
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.colors as colors
 
-cm = colors.LinearSegmentedColormap.from_list('gray_gold_map', [colors.to_rgb('darkgray'), 
+cm = colors.LinearSegmentedColormap.from_list('gray_gold_map', [colors.to_rgb('darkgray'),
                                                                 colors.to_rgb('gold')], N=100)
-def show_board(bp,wp,response,color,save=False):    
+def show_board(bp,wp,response,color,save=False):
     fig = plt.figure(figsize=[9,4])
     ax = fig.add_subplot(111,aspect='equal')
     ax.vlines(np.arange(-0.5,9.5,1),-0.5,3.5)
@@ -214,7 +215,7 @@ def show_board(bp,wp,response,color,save=False):
         circ = patches.Circle((p%9,p//9),0.33,color=color,fill=False)
         circ = ax.add_patch(circ)
     plt.imshow(np.zeros(shape=[4,9]), cmap=cm, 
-               interpolation='nearest',origin='bottom',vmin=0,vmax=0.2)
+               interpolation='nearest',origin='lower',vmin=0,vmax=0.2)
     ax.axis('off')
     fig.tight_layout()
     #if save:
